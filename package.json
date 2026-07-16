@@ -1,0 +1,62 @@
+{
+  "name": "n8n-nodes-prowlarr",
+  "version": "0.1.0",
+  "description": "n8n community node for Prowlarr (indexer manager) via its v1 API",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "prowlarr",
+    "indexer",
+    "arr"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Izakun",
+    "email": "carrer.a@outlook.fr"
+  },
+  "homepage": "https://github.com/Izakun/n8n-nodes-prowlarr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Izakun/n8n-nodes-prowlarr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Izakun/n8n-nodes-prowlarr/issues"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.10"
+  },
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ProwlarrApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Prowlarr/Prowlarr.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^5.0.0",
+    "n8n-workflow": "*",
+    "prettier": "^3.3.0",
+    "typescript": "^5.5.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
