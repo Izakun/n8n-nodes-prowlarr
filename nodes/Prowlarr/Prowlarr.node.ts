@@ -202,47 +202,42 @@ export class Prowlarr implements INodeType {
 					return this.helpers.httpRequestWithAuthentication.call(this, 'prowlarrApi', options);
 				};
 
-				let response: unknown;
+				const param = <T>(name: string, fallback?: T) =>
+					this.getNodeParameter(name, i, fallback as T) as T;
 
-				if (resource === 'system') {
-					response = await request(
-						'GET',
-						operation === 'getHealth' ? '/api/v1/health' : '/api/v1/system/status',
+				const csvToNumbers = (value: string) =>
+					value
+						.split(',')
+						.map((s) => Number(s.trim()))
+						.filter((n) => !Number.isNaN(n));
+
+				const handlers: Record<string, () => Promise<unknown>> = {
+					'system:getStatus': () => request('GET', '/api/v1/system/status'),
+					'system:getHealth': () => request('GET', '/api/v1/health'),
+					'command:trigger': () =>
+						request('POST', '/api/v1/command', { body: { name: param<string>('commandName') } }),
+					'indexer:getMany': () => request('GET', '/api/v1/indexer'),
+					'indexer:get': () => request('GET', `/api/v1/indexer/${param<number>('indexerId')}`),
+					'search:search': () => {
+						const options = param<IDataObject>('searchOptions', {});
+						const qs: IDataObject = { query: param<string>('query') };
+						if (options.type) qs.type = options.type;
+						if (options.limit) qs.limit = options.limit;
+						if (options.indexerIds) qs.indexerIds = csvToNumbers(options.indexerIds as string);
+						if (options.categories) qs.categories = csvToNumbers(options.categories as string);
+						return request('GET', '/api/v1/search', { qs });
+					},
+				};
+
+				const handler = handlers[`${resource}:${operation}`];
+				if (!handler) {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Unsupported operation: ${resource} / ${operation}`,
+						{ itemIndex: i },
 					);
-				} else if (resource === 'command') {
-					const name = this.getNodeParameter('commandName', i) as string;
-					response = await request('POST', '/api/v1/command', { body: { name } });
-				} else if (resource === 'indexer') {
-					if (operation === 'getMany') {
-						response = await request('GET', '/api/v1/indexer');
-					} else {
-						const indexerId = this.getNodeParameter('indexerId', i) as number;
-						response = await request('GET', `/api/v1/indexer/${indexerId}`);
-					}
-				} else if (resource === 'search') {
-					const query = this.getNodeParameter('query', i) as string;
-					const options = this.getNodeParameter('searchOptions', i, {}) as IDataObject;
-					const qs: IDataObject = { query };
-					if (options.type) qs.type = options.type;
-					if (options.limit) qs.limit = options.limit;
-					if (options.indexerIds) {
-						qs.indexerIds = (options.indexerIds as string)
-							.split(',')
-							.map((s) => Number(s.trim()))
-							.filter((n) => !Number.isNaN(n));
-					}
-					if (options.categories) {
-						qs.categories = (options.categories as string)
-							.split(',')
-							.map((s) => Number(s.trim()))
-							.filter((n) => !Number.isNaN(n));
-					}
-					response = await request('GET', '/api/v1/search', { qs });
-				} else {
-					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, {
-						itemIndex: i,
-					});
 				}
+				const response = await handler();
 
 				if (Array.isArray(response)) {
 					for (const element of response) {
