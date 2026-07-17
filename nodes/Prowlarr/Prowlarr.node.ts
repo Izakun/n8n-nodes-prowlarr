@@ -16,7 +16,7 @@ export class Prowlarr implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Prowlarr',
 		name: 'prowlarr',
-		icon: { light: 'file:prowlarr.svg', dark: 'file:prowlarr.svg' },
+		icon: { light: 'file:prowlarr.svg', dark: 'file:prowlarr.dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + " : " + $parameter["resource"]}}',
