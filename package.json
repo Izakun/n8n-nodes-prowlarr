@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-prowlarr",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "n8n community node for Prowlarr (indexer manager) via its v1 API",
   "keywords": [
     "n8n-community-node-package",
